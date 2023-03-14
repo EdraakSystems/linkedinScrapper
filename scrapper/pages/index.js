@@ -3,13 +3,78 @@ import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useState } from 'react'
+import axios from 'axios'
 
 export default function Home() {
 
   const [job, setJob] = useState('')
+  const [results, setResults] = useState([])
+  const [loader, setLoader] = useState(false)
 
   const handleSubmit = () => {
 
+  }
+
+  const handleJob = async () => {
+    let query2 = 'javascript'
+    setLoader(true)
+    const res = await axios.get('http://localhost:4000/jobs', query2)
+    const response = res.data
+    let results = []
+    for (let i = 0; i < response.length; i++) {
+      const range = document.createRange();
+      const fragment = range.createContextualFragment(response[0]);
+      const linkElement = fragment.querySelector('a');
+      const link = linkElement.getAttribute('href')
+      const title = linkElement.innerHTML.trim()
+      results = [...results, { link, title }]
+    }
+    setLoader(false)
+    setResults(results)
+  }
+
+  const handleProfiles = async () => {
+    let query2 = 'javascript'
+    setLoader(true)
+    const res = await axios.get('http://localhost:4000/profiles', query2)
+    const response = res.data
+    let temp = []
+    console.log(response)
+    for (let i = 0; i < response.length; i++) {
+      const range = document.createRange();
+      const fragment = range.createContextualFragment(response[i]);
+      const linkElement = fragment.querySelector('a');
+      const data2 = fragment.querySelectorAll('.app-aware-link')
+      let data3 = data2[1]
+      const link = data3.getAttribute('href')
+      const title = data3.querySelector('span').querySelector('span').innerText
+      temp = [...temp, { link, title }]
+    }
+    console.log('results are:', temp)
+    setLoader(false)
+    setResults(temp)
+  }
+
+  const handleCompanies = async () => {
+    let query2 = 'javascript'
+    setLoader(true)
+    const res = await axios.get('http://localhost:4000/companies', query2)
+    const response = res.data
+    let temp = []
+    console.log(response)
+    // for (let i = 0; i < response.length; i++) {
+    //   const range = document.createRange();
+    //   const fragment = range.createContextualFragment(response[i]);
+    //   const linkElement = fragment.querySelector('a');
+    //   const data2 = fragment.querySelectorAll('.app-aware-link')
+    //   let data3 = data2[1]
+    //   const link = data3.getAttribute('href')
+    //   const title = data3.querySelector('span').querySelector('span').innerText
+    //   temp = [...temp, { link, title }]
+    // }
+    // console.log('results are:', temp)
+    setLoader(false)
+    setResults(temp)
   }
 
   return (
@@ -25,16 +90,16 @@ export default function Home() {
           e.preventDefault()
           handleSubmit()
         }} method="POST">
-          <div class="shadow sm:overflow-hidden sm:rounded-md">
-            <div class="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div class="grid">
-                <div class="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                  <div class='w-full flex flex-col'>
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Job</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Job" required />
+          <div className="shadow sm:overflow-hidden sm:rounded-md">
+            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+              <div className="grid">
+                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                  <div className='w-full flex flex-col'>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Job</label>
+                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Job" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
-                    <button type="submit" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                    <button onClick={handleJob} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
                   </div>
                 </div>
               </div>
@@ -45,16 +110,16 @@ export default function Home() {
           e.preventDefault()
           handleSubmit()
         }} method="POST">
-          <div class="shadow sm:overflow-hidden sm:rounded-md">
-            <div class="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div class="grid">
-                <div class="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                  <div class='w-full flex flex-col'>
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
+          <div className="shadow sm:overflow-hidden sm:rounded-md">
+            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+              <div className="grid">
+                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                  <div className='w-full flex flex-col'>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
+                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
-                    <button type="submit" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                    <button onClick={handleProfiles} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
                   </div>
                 </div>
               </div>
@@ -65,29 +130,60 @@ export default function Home() {
           e.preventDefault()
           handleSubmit()
         }} method="POST">
-          <div class="shadow sm:overflow-hidden sm:rounded-md">
-            <div class="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div class="grid">
-                <div class="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                  <div class='w-full flex flex-col'>
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
+          <div className="shadow sm:overflow-hidden sm:rounded-md">
+            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+              <div className="grid">
+                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                  <div className='w-full flex flex-col'>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
+                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
-                    <button type="submit" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                    <button onClick={handleCompanies} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </form>
-        <div style={{width: '32.5rem'}} class="shadow sm:overflow-hidden sm:rounded-md mt-5">
-          <div class="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-            <div class="grid">
-              <div class="w-full flex flex-col">
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Results</label>
+        <div style={{ width: '32.5rem' }} className="shadow sm:overflow-hidden sm:rounded-md mt-5">
+          <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+            <div className="grid">
+              <div className="w-full flex flex-col">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Results</label>
                 <div>
-                  Results Goes Here
+                  {
+                    loader ?
+                      <div className='flex justify-center'>
+                        <div role="status">
+                          <svg aria-hidden="true" className="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                          </svg>
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                      </div>
+                      :
+                      !results ?
+                        <p>
+                          Results Goes Here
+                        </p>
+                        :
+                        results?.map((item, index) => {
+                          return <div className="grid" key={index}>
+                            <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                              <div className='w-full flex flex-col'>
+                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.title}</label>
+                              </div>
+                              <div style={{ height: 'fit-content' }}>
+                                <button onClick={() => {
+                                  window.location.href = `https://linkedin.com${item.link}`
+                                }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
+                              </div>
+                            </div>
+                          </div>
+                        })
+                  }
                 </div>
               </div>
             </div>

@@ -105,6 +105,7 @@ async function getCompanies() {
 
         const list = await driver.findElements(By.className("reusable-search__entity-result-list "))
         for(let i=0 ; i<list.length; i++){
+            console.log('the test is ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------',await list[i].getAttribute('innerHTML'))
             totalCompanies.push(await list[i].getAttribute('innerHTML'))
         }
         // totalJobs.push(list.getAttribute('innerHTML'))
@@ -171,4 +172,4 @@ async function getProfiles() {
     console.log(totalProfiles)
 }
 
-getProfiles();
+getCompanies();
