@@ -8,18 +8,22 @@ import axios from 'axios'
 export default function Home() {
 
   const [job, setJob] = useState('')
+  const [user, setUser] = useState('')
+  const [company, setCompany] = useState('')
   const [results, setResults] = useState([])
   const [loader, setLoader] = useState(false)
 
-  const handleSubmit = () => {
-
-  }
-
   const handleJob = async () => {
-    let query2 = 'javascript'
+    if(job == ''){
+      return
+    }
+    let query2 = job
     setLoader(true)
     const res = await axios.get('http://localhost:4000/jobs', query2)
     const response = res.data
+    if(res.data == ''){
+      setResults('No Data Found')
+    }
     let results = []
     for (let i = 0; i < response.length; i++) {
       const range = document.createRange();
@@ -34,7 +38,7 @@ export default function Home() {
   }
 
   const handleProfiles = async () => {
-    let query2 = 'javascript'
+    let query2 = user
     setLoader(true)
     const res = await axios.get('http://localhost:4000/profiles', query2)
     const response = res.data
@@ -56,27 +60,24 @@ export default function Home() {
   }
 
   const handleCompanies = async () => {
-    let query2 = 'javascript'
+    let query2 = company
     setLoader(true)
     const res = await axios.get('http://localhost:4000/companies', query2)
     const response = res.data
     let temp = []
-    console.log(response)
-    // for (let i = 0; i < response.length; i++) {
-    //   const range = document.createRange();
-    //   const fragment = range.createContextualFragment(response[i]);
-    //   const linkElement = fragment.querySelector('a');
-    //   const data2 = fragment.querySelectorAll('.app-aware-link')
-    //   let data3 = data2[1]
-    //   const link = data3.getAttribute('href')
-    //   const title = data3.querySelector('span').querySelector('span').innerText
-    //   temp = [...temp, { link, title }]
-    // }
-    // console.log('results are:', temp)
+    for (let i = 0; i < response.length; i++) {
+      const range = document.createRange();
+      const fragment = range.createContextualFragment(response[i]);
+      const linkElement = fragment.querySelector('a');
+      const data2 = fragment.querySelectorAll('.app-aware-link')
+      let data3 = data2[1]
+      const link = data3.getAttribute('href')
+      const title = data3.innerText.trim()
+      temp = [...temp, { link, title }]
+    }
     setLoader(false)
     setResults(temp)
   }
-
   return (
     <>
       <Head>
@@ -116,7 +117,7 @@ export default function Home() {
                 <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
                   <div className='w-full flex flex-col'>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
+                    <input type="text" value={user} onChange={(e) => setUser(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
                     <button onClick={handleProfiles} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
@@ -136,7 +137,7 @@ export default function Home() {
                 <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
                   <div className='w-full flex flex-col'>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
+                    <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
                     <button onClick={handleCompanies} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
