@@ -8,6 +8,7 @@ const profilePath = "C:/Users/Imtiaz Ahmed/AppData/Roaming/Mozilla/Firefox/Profi
 options.setProfile(profilePath);
 // global browser instance
 
+var socketObj;
 let browser;
 async function start() {
     const driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
@@ -42,7 +43,7 @@ async function getJobs() {
     const spanElement = await lastPageButton.findElement(By.tagName('span'));
     let spanValue = await spanElement.getText();
 
-    if(spanValue>2){
+    if (spanValue > 2) {
         spanValue = 2
     }
     for (let i = 0; i < spanValue; i++) {
@@ -53,7 +54,7 @@ async function getJobs() {
         // await new Promise(resolve => setTimeout(resolve, 6000));
 
         const list = await browser.findElements(By.className("jobs-search-results__list-item"))
-        for(let i=0 ; i<list.length; i++){
+        for (let i = 0; i < list.length; i++) {
             totalJobs.push(await list[i].getAttribute('innerHTML'))
         }
         // totalJobs.push(list.getAttribute('innerHTML'))
@@ -68,8 +69,7 @@ async function getJobs() {
     return totalJobs
 }
 
-async function getCompanies() {
-    console.log('companies is called')
+async function getCompanies(socket) {
     await start()
     await browser.get('https://www.linkedin.com');
     // Wait for the page to finish loading before attempting to find the search input element
@@ -101,19 +101,20 @@ async function getCompanies() {
         await browser.wait(until.elementLocated(By.className('reusable-search__entity-result-list')));
         await new Promise(resolve => setTimeout(resolve, 3000));
         const list = await browser.findElements(By.className("reusable-search__result-container"))
-        for(let i=0 ; i<list.length; i++){
-            totalCompanies.push(await list[i].getAttribute('innerHTML'))
+        for (let i = 0; i < list.length; i++) {
+            let d = await list[i].getAttribute('innerHTML')
+            socket.emit('companies', d)
+            totalCompanies.push(d)
         }
         // totalJobs.push(list.getAttribute('innerHTML'))
         await pagination[i + 1].click()
         await browser.wait(until.elementLocated(By.className('entity-result__item')));
-       await new Promise(resolve => setTimeout(resolve, 6000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
     return totalCompanies
 }
 
 async function getProfiles() {
-    console.log('profiles is called')
     await start()
     await browser.get('https://www.linkedin.com');
     // Wait for the page to finish loading before attempting to find the search input element
@@ -137,7 +138,7 @@ async function getProfiles() {
     const lastPageButton = pagination[pagination.length - 1];
     const spanElement = await lastPageButton.findElement(By.tagName('span'));
     let spanValue = await spanElement.getText();
-    if(spanValue > 2){
+    if (spanValue > 2) {
         spanValue = 2
     }
     for (let i = 0; i < spanValue; i++) {
@@ -148,20 +149,23 @@ async function getProfiles() {
         // await driver.wait(until.elementLocated(By.className('jobs-search-results__list-item')));
         // await new Promise(resolve => setTimeout(resolve, 6000));
         const list = await browser.findElements(By.className("entity-result__item"))
-        for(let i=0 ; i<list.length; i++){
+        for (let i = 0; i < list.length; i++) {
             totalProfiles.push(await list[i].getAttribute('innerHTML'))
         }
         // totalJobs.push(list.getAttribute('innerHTML'))
         await pagination[i + 1].click()
         await browser.wait(until.elementLocated(By.className('entity-result__item')));
         await new Promise(resolve => setTimeout(resolve, 4000));
+        socket.emit('data', totalProfiles.join('\n'));
     }
+    socket.emit('end', '');
     return totalProfiles
 }
 
 const server = http.createServer(async function (req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     let body = '';
+
     req.on('data', function (chunk) {
         body += chunk.toString();
     });
@@ -171,17 +175,40 @@ const server = http.createServer(async function (req, res) {
             // const query = data.query;
             const response = await getJobs();
             res.end(JSON.stringify(response));
-        } else if (req.url === '/companies') {
-            const response = await getCompanies();
+        }  else if (req.url === '/companies') {
+            const response = await getCompanies(socketObj);
             res.end(JSON.stringify(response));
-        } else if (req.url === '/profiles') {
+        }else if (req.url === '/profiles') {
             const response = await getProfiles();
             res.end(JSON.stringify(response));
+        } else if (req.url === '/stream') {
+            res.end('hello')
+            // io.on('connection', (socket) => {
+            //     console.log('a user connected');
+            //     setInterval(() => {
+            //       socket.emit('data', Math.random());
+            //     }, 1000);
+            //   });
         } else {
             res.statusCode = 404;
             res.end('Not found');
         }
     })
+});
+
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => {
+    socketObj = socket;
+    console.log('a user connected');
+    setInterval(() => {
+        socket.emit('data', Math.random());
+    }, 5000);
+
+    socket.on('getCompanies', async function () {
+        const response = await getCompanies(socket);
+        socket.emit('companies', JSON.stringify(response));
+    });
 });
 
 server.listen(4000, function () {

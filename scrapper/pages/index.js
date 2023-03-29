@@ -2,8 +2,10 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
+import io from 'socket.io-client';
+import socketIOClient from 'socket.io-client';
 
 export default function Home() {
 
@@ -13,15 +15,51 @@ export default function Home() {
   const [results, setResults] = useState([])
   const [loader, setLoader] = useState(false)
 
+  useEffect(() => {
+    const socket = socketIOClient('http://localhost:4000');
+    socket.on('connect', () => {
+      console.log('Connected to stream');
+    });
+    socket.on('data', (data) => {
+      console.log(data)
+    });
+    let arr = []
+    socket.on('companies', (response) => {
+      const range = document.createRange();
+      const fragment = range.createContextualFragment(response);
+      let item = fragment.querySelector('.mb1 .app-aware-link')
+      arr.push({link: item.getAttribute('href'), text: item.textContent})
+      setResults(arr)
+      
+      setLoader(true)
+      let temp = []
+
+      // for (let i = 0; i < response.length; i++) {
+      //   const range = document.createRange();
+      //   const fragment = range.createContextualFragment(response[i]);
+      //   const linkElement = fragment.querySelector('a');
+      //   const data2 = fragment.querySelectorAll('.app-aware-link')
+      //   let data3 = data2[1]
+      //   const link = data3.getAttribute('href')
+      //   const title = data3.innerText.trim()
+      //   temp = [...temp, { link, title }]
+      // }
+
+      setLoader(false)
+      setResults(...results, temp)
+    })
+  
+  }, [])
+
   const handleJob = async () => {
-    if(job == ''){
+    if (job == '') {
       return
     }
     let query2 = job
     setLoader(true)
     const res = await axios.get('http://localhost:4000/jobs', query2)
     const response = res.data
-    if(res.data == ''){
+    if (res.data == '') {
       setResults('No Data Found')
     }
     let results = []
@@ -78,6 +116,11 @@ export default function Home() {
     setLoader(false)
     setResults(temp)
   }
+
+  const handleSubmit = () => {
+
+  }
+
   return (
     <>
       <Head>
@@ -170,20 +213,21 @@ export default function Home() {
                           Results Goes Here
                         </p>
                         :
-                        results?.map((item, index) => {
-                          return <div className="grid" key={index}>
-                            <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                              <div className='w-full flex flex-col'>
-                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.title}</label>
-                              </div>
-                              <div style={{ height: 'fit-content' }}>
-                                <button onClick={() => {
-                                  window.location.href = `https://linkedin.com${item.link}`
-                                }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
-                              </div>
-                            </div>
-                          </div>
-                        })
+                        <p>asdf</p>
+                        // results?.map((item, index) => {
+                        //   return <div className="grid" key={index}>
+                        //     <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                        //       <div className='w-full flex flex-col'>
+                        //         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.title}</label>
+                        //       </div>
+                        //       <div style={{ height: 'fit-content' }}>
+                        //         <button onClick={() => {
+                        //           window.location.href = `${item.link}`
+                        //         }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
+                        //       </div>
+                        //     </div>
+                        //   </div>
+                        // })
                   }
                 </div>
               </div>
