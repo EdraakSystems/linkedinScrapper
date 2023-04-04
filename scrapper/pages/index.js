@@ -11,9 +11,12 @@ export default function Home() {
 
   const [job, setJob] = useState('')
   const [user, setUser] = useState('')
+  const [jobLocation, setJobLocation] = useState('')
   const [company, setCompany] = useState('')
   const [results, setResults] = useState([])
   const [loader, setLoader] = useState(false)
+  const [companyLocation, setCompanyLocation] = useState()
+  const [userLocation, setUserLocation] = useState()
 
   useEffect(() => {
     const socket = socketIOClient('http://localhost:4000');
@@ -25,101 +28,113 @@ export default function Home() {
     });
     let arr = []
     socket.on('companies', (response) => {
-      const range = document.createRange();
-      const fragment = range.createContextualFragment(response);
-      let item = fragment.querySelector('.mb1 .app-aware-link')
-      arr.push({link: item.getAttribute('href'), text: item.textContent})
-      setResults(arr)
-      
-      setLoader(true)
-      let temp = []
-
-      // for (let i = 0; i < response.length; i++) {
-      //   const range = document.createRange();
-      //   const fragment = range.createContextualFragment(response[i]);
-      //   const linkElement = fragment.querySelector('a');
-      //   const data2 = fragment.querySelectorAll('.app-aware-link')
-      //   let data3 = data2[1]
-      //   const link = data3.getAttribute('href')
-      //   const title = data3.innerText.trim()
-      //   temp = [...temp, { link, title }]
-      // }
-
-      setLoader(false)
-      setResults(...results, temp)
+      if (response) {
+        if (response.length > 20) {
+          setLoader(true)
+          const range = document.createRange();
+          const fragment = range.createContextualFragment(response);
+          let item = fragment.querySelector('.mb1 .app-aware-link')
+          if (item) {
+            arr.push({ link: item.getAttribute('href'), text: item.textContent })
+            setLoader(false)
+            console.log(results)
+            setResults([...results, ...arr])
+          }
+        }
+      }
     })
-  
+
+
+    socket.on('profiles', (response) => {
+      console.log('somthing')
+      if (response) {
+        if (response.length > 20) {
+          console.log('hello world')
+          setLoader(true)
+          const range = document.createRange();
+          const fragment = range.createContextualFragment(response);
+          console.log(fragment)
+          let item = fragment.querySelector('.artdeco-entity-lockup  .artdeco-entity-lockup__title a')
+          // let item2 = fragment.querySelector('.relative job-card-list  .mb1 .app-aware-link  span span')
+          console.log(item)
+          if (item) {
+            let itemlink = `https://www.linkedin.com/${item.getAttribute('href')}`
+            arr.push({ link: itemlink, text: item.innerText })
+            console.log(arr)
+            setLoader(false)
+            setResults([...results, ...arr])
+          }
+        }
+      }
+    })
+
+    socket.on('jobs', (response) => {
+      if (response.length > 20) {
+        setLoader(true)
+        const range = document.createRange();
+        const fragment = range.createContextualFragment(response);
+        let item = fragment.querySelector('.job-card-container .job-card-list__entity-lockup .artdeco-entity-lockup__content .job-card-container__link')
+        if (item?.getAttribute('href')) {
+          arr.push({ link: item.getAttribute('href'), text: item.innerText })
+        } else {
+          console.log('red alert-----', item)
+        }
+        console.log(arr)
+        setLoader(false)
+        setResults([...results, ...arr])
+      }
+    })
+
   }, [])
 
   const handleJob = async () => {
+    setResults([])
     if (job == '') {
       return
     }
     let query2 = job
     setLoader(true)
-    const res = await axios.get('http://localhost:4000/jobs', query2)
+    const res = await axios.get(`http://localhost:4000/jobs/?name=${query2}/?location=${jobLocation}`);
     const response = res.data
-    if (res.data == '') {
-      setResults('No Data Found')
-    }
-    let results = []
-    for (let i = 0; i < response.length; i++) {
-      const range = document.createRange();
-      const fragment = range.createContextualFragment(response[0]);
-      const linkElement = fragment.querySelector('a');
-      const link = linkElement.getAttribute('href')
-      const title = linkElement.innerHTML.trim()
-      results = [...results, { link, title }]
-    }
-    setLoader(false)
-    setResults(results)
+    // if (res.data == '') {
+    //   setResults('No Data Found')
+    // }
+    // let results = []
+    // for (let i = 0; i < response.length; i++) {
+    //   const range = document.createRange();
+    //   const fragment = range.createContextualFragment(response[0]);
+    //   const linkElement = fragment.querySelector('a');
+    //   const link = linkElement.getAttribute('href')
+    //   const title = linkElement.innerHTML.trim()
+    //   results = [...results, { link, title }]
+    // }
+    // setLoader(false)
+    // setResults(results)
   }
 
   const handleProfiles = async () => {
+    setResults([])
     let query2 = user
     setLoader(true)
-    const res = await axios.get('http://localhost:4000/profiles', query2)
+    const res = await axios.get(`http://localhost:4000/profiles/?name=${query2}/?location=${userLocation}`);
     const response = res.data
-    let temp = []
-    console.log(response)
-    for (let i = 0; i < response.length; i++) {
-      const range = document.createRange();
-      const fragment = range.createContextualFragment(response[i]);
-      const linkElement = fragment.querySelector('a');
-      const data2 = fragment.querySelectorAll('.app-aware-link')
-      let data3 = data2[1]
-      const link = data3.getAttribute('href')
-      const title = data3.querySelector('span').querySelector('span').innerText
-      temp = [...temp, { link, title }]
-    }
-    console.log('results are:', temp)
-    setLoader(false)
-    setResults(temp)
   }
 
   const handleCompanies = async () => {
+    console.log('compnaies caleed')
+    setResults([])
     let query2 = company
     setLoader(true)
-    const res = await axios.get('http://localhost:4000/companies', query2)
+    const res = await axios.post(`http://localhost:4000/companies/?name=${query2}/?location=${companyLocation}`);
     const response = res.data
-    let temp = []
-    for (let i = 0; i < response.length; i++) {
-      const range = document.createRange();
-      const fragment = range.createContextualFragment(response[i]);
-      const linkElement = fragment.querySelector('a');
-      const data2 = fragment.querySelectorAll('.app-aware-link')
-      let data3 = data2[1]
-      const link = data3.getAttribute('href')
-      const title = data3.innerText.trim()
-      temp = [...temp, { link, title }]
-    }
-    setLoader(false)
-    setResults(temp)
   }
 
   const handleSubmit = () => {
 
   }
+
+  console.log(results)
+
 
   return (
     <>
@@ -129,7 +144,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main className={styles.main} style={{ gap: '0.5rem' }}>
         <form onSubmit={(e) => {
           e.preventDefault()
           handleSubmit()
@@ -137,10 +152,13 @@ export default function Home() {
           <div className="shadow sm:overflow-hidden sm:rounded-md">
             <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
               <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
                   <div className='w-full flex flex-col'>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Job</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Job" required />
+                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job title" required />
+                  </div>
+                  <div className='w-full flex flex-col'>
+                    <input type="text" value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job Location" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
                     <button onClick={handleJob} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
@@ -157,10 +175,13 @@ export default function Home() {
           <div className="shadow sm:overflow-hidden sm:rounded-md">
             <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
               <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
                   <div className='w-full flex flex-col'>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
                     <input type="text" value={user} onChange={(e) => setUser(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
+                  </div>
+                  <div className='w-full flex flex-col'>
+                    <input type="text" value={userLocation} onChange={(e) => setUserLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users Location" required />
                   </div>
                   <div style={{ height: 'fit-content' }}>
                     <button onClick={handleProfiles} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
@@ -177,13 +198,20 @@ export default function Home() {
           <div className="shadow sm:overflow-hidden sm:rounded-md">
             <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
               <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
                   <div className='w-full flex flex-col'>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
                     <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
                   </div>
+                  <div className='w-full flex flex-col'>
+                    <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Company Location" required />
+                  </div>
                   <div style={{ height: 'fit-content' }}>
-                    <button onClick={handleCompanies} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                    <button onClick={() => {
+                      if (company.length != 0) {
+                        handleCompanies()
+                      }
+                    }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
                   </div>
                 </div>
               </div>
@@ -213,21 +241,20 @@ export default function Home() {
                           Results Goes Here
                         </p>
                         :
-                        <p>asdf</p>
-                        // results?.map((item, index) => {
-                        //   return <div className="grid" key={index}>
-                        //     <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                        //       <div className='w-full flex flex-col'>
-                        //         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.title}</label>
-                        //       </div>
-                        //       <div style={{ height: 'fit-content' }}>
-                        //         <button onClick={() => {
-                        //           window.location.href = `${item.link}`
-                        //         }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
-                        //       </div>
-                        //     </div>
-                        //   </div>
-                        // })
+                        results?.map((item, index) => {
+                          return <div className="grid" key={index}>
+                            <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
+                              <div className='w-full flex flex-col'>
+                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.text}</label>
+                              </div>
+                              <div style={{ height: 'fit-content' }}>
+                                <button onClick={() => {
+                                  window.location.href = `${item.link}`
+                                }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
+                              </div>
+                            </div>
+                          </div>
+                        })
                   }
                 </div>
               </div>
