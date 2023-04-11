@@ -17,6 +17,18 @@ export default function Home() {
   const [loader, setLoader] = useState(false)
   const [companyLocation, setCompanyLocation] = useState()
   const [userLocation, setUserLocation] = useState()
+  const [companyRocker, setCompanyRocker] = useState('Results')
+  const [error, setError] = useState(false)
+
+
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        setError(false);
+      }, 3000);
+    }
+  }, [error]);
+
 
   useEffect(() => {
     const socket = socketIOClient('http://localhost:4000');
@@ -85,6 +97,17 @@ export default function Home() {
       }
     })
 
+    socket.on('companyRocker', (response) => {
+      setCompanyRocker(response)
+    })
+
+
+
+    socket.on('error', (response) => {
+      setError(true)
+    })
+
+
   }, [])
 
   const handleJob = async () => {
@@ -145,85 +168,107 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main} style={{ gap: '0.5rem' }}>
-        <form onSubmit={(e) => {
-          e.preventDefault()
-          handleSubmit()
-        }} method="POST">
-          <div className="shadow sm:overflow-hidden sm:rounded-md">
-            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
-                  <div className='w-full flex flex-col'>
-                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Job</label>
-                    <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job title" required />
-                  </div>
-                  <div className='w-full flex flex-col'>
-                    <input type="text" value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job Location" required />
-                  </div>
-                  <div style={{ height: 'fit-content' }}>
-                    <button onClick={handleJob} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+
+        {
+          error &&
+          <div id="alert-additional-content-2" class="p-4 mb-4 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+            <div class="flex items-center">
+              <svg aria-hidden="true" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+              <span class="sr-only">Info</span>
+              <h3 class="text-lg font-medium">Something went wrong Please Try again later</h3>
+            </div>
+          </div>
+        }
+
+        <div class="flex">
+          <div class="w-1/3 mx-2">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }} method="POST">
+              <div className="shadow sm:overflow-hidden sm:rounded-md">
+                <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+                  <div className="grid">
+                    <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
+                      <div className='w-full flex flex-col'>
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Job</label>
+                        <input type="text" value={job} onChange={(e) => setJob(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job title" required />
+                      </div>
+                      <div className='w-full flex flex-col'>
+                        <input type="text" value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job Location" required />
+                      </div>
+                      <div style={{ height: 'fit-content' }}>
+                        <button onClick={handleJob} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
-        </form>
-        <form onSubmit={(e) => {
-          e.preventDefault()
-          handleSubmit()
-        }} method="POST">
-          <div className="shadow sm:overflow-hidden sm:rounded-md">
-            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
-                  <div className='w-full flex flex-col'>
-                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
-                    <input type="text" value={user} onChange={(e) => setUser(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
-                  </div>
-                  <div className='w-full flex flex-col'>
-                    <input type="text" value={userLocation} onChange={(e) => setUserLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users Location" required />
-                  </div>
-                  <div style={{ height: 'fit-content' }}>
-                    <button onClick={handleProfiles} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+          <div class="w-1/3 mx-2">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }} method="POST">
+              <div className="shadow sm:overflow-hidden sm:rounded-md">
+                <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+                  <div className="grid">
+                    <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
+                      <div className='w-full flex flex-col'>
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Users</label>
+                        <input type="text" value={user} onChange={(e) => setUser(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users" required />
+                      </div>
+                      <div className='w-full flex flex-col'>
+                        <input type="text" value={userLocation} onChange={(e) => setUserLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Users Location" required />
+                      </div>
+                      <div style={{ height: 'fit-content' }}>
+                        <button onClick={handleProfiles} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
-        </form>
-        <form onSubmit={(e) => {
-          e.preventDefault()
-          handleSubmit()
-        }} method="POST">
-          <div className="shadow sm:overflow-hidden sm:rounded-md">
-            <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
-              <div className="grid">
-                <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
-                  <div className='w-full flex flex-col'>
-                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
-                    <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
-                  </div>
-                  <div className='w-full flex flex-col'>
-                    <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Company Location" required />
-                  </div>
-                  <div style={{ height: 'fit-content' }}>
-                    <button onClick={() => {
-                      if (company.length != 0) {
-                        handleCompanies()
-                      }
-                    }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+          <div class="w-1/3 mx-2">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }} method="POST">
+              <div className="shadow sm:overflow-hidden sm:rounded-md">
+                <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+                  <div className="grid">
+                    <div className="w-full flex align-bottom gap-1 justify-end flex-col" style={{ alignItems: 'flex-end' }}>
+                      <div className='w-full flex flex-col'>
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search Companies</label>
+                        <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Search Companies" required />
+                      </div>
+                      <div className='w-full flex flex-col'>
+                        <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Company Location" required />
+                      </div>
+                      <div style={{ height: 'fit-content' }}>
+                        <button onClick={() => {
+                          if (company.length != 0) {
+                            handleCompanies()
+                          }
+                        }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
+
           </div>
-        </form>
-        <div style={{ width: '32.5rem' }} className="shadow sm:overflow-hidden sm:rounded-md mt-5">
-          <div className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
+        </div>
+
+        <div style={{ width: '100%' }} className="shadow sm:overflow-hidden sm:rounded-md mt-5">
+          <div style={{ overflow: 'scroll', height: '460px', overflowX: 'clip' }} className="space-y-6 px-4 py-5 sm:p-6 dark:border-gray-700 dark:text-gray-400  dark:bg-gray-800">
             <div className="grid">
               <div className="w-full flex flex-col">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Results</label>
-                <div>
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center">{!results.length > 0 ? companyRocker : `${results.length} records loaded... Loading Next 10`}</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
                   {
                     loader ?
                       <div className='flex justify-center'>
@@ -242,10 +287,10 @@ export default function Home() {
                         </p>
                         :
                         results?.map((item, index) => {
-                          return <div className="grid" key={index}>
-                            <div className="w-full flex align-bottom gap-1 justify-end" style={{ alignItems: 'flex-end' }}>
-                              <div className='w-full flex flex-col'>
-                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{item?.text}</label>
+                          return <div className="grid w-1/5" key={index} style={{ border: '1px solid #2d5986', padding: '1rem' }}>
+                            <div className="w-full flex align-bottom gap-1 justify-center flex-col" style={{ alignItems: 'center' }}>
+                              <div className='w-full flex flex-col justify-center'>
+                                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center">{item?.text}</label>
                               </div>
                               <div style={{ height: 'fit-content' }}>
                                 <button onClick={() => {
