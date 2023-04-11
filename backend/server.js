@@ -48,7 +48,7 @@ async function getJobs(socket, queryParams, q2) {
         }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 6000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     await buttons[temp].click()
     await browser.wait(until.elementLocated(By.className("jobs-search-box__input--location")));
     const inp = await browser.findElement(By.className("jobs-search-box__input--location"));
@@ -105,66 +105,88 @@ async function getJobs(socket, queryParams, q2) {
 }
 
 async function getCompanies(socket, q1, q2) {
-    console.log('started');
-    await start();
-    await browser.get('https://www.linkedin.com');
-    // Wait for the page to finish loading before attempting to find the search input element
-    await browser.wait(until.elementLocated(By.className('search-global-typeahead__input')));
-    // get jobs on the page
-    let element = await browser.findElement(By.className('search-global-typeahead__input'));
-    await element.click();
-    await element.sendKeys(q1);
-    await element.sendKeys(Key.RETURN);
-    console.log('started2');
-    await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
-    const buttons = await browser.findElements(By.className("search-reusables__primary-filter"));
-    await buttons[5].click();
-    // Fetch all companies  
-    console.log('started3');
-    await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
-    const filters = await browser.findElements(By.className("search-reusables__primary-filter"));
-    await filters[1].click();
-    console.log('hello world');
-    const inputField = await browser.findElement(By.className('search-basic-typeahead')).findElement(By.tagName('input'));
-    const buttons2 = await browser.findElement(By.className('reusable-search-filters-buttons')).findElements(By.tagName('button'));
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await inputField.click();
-    await inputField.sendKeys(q2, Key.RETURN);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const suggestion = await browser.findElement(By.className('basic-typeahead__triggered-content'));
-    await suggestion.click()
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    buttons2[1].click()
-    console.log('after clicking')
-    let totalCompanies = []
-    await browser.wait(until.elementLocated(By.className('entity-result__item')));
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const container = await browser.findElement(By.className('theme--mercado'));
-    await browser.executeScript("arguments[0].scrollTop = arguments[0].scrollHeight;", container);
-    await browser.wait(until.elementLocated(By.className('artdeco-pagination__indicator--number')));
-    const pagination = await browser.findElements(By.className('artdeco-pagination__indicator--number'));
-    const lastPageButton = pagination[pagination.length - 1];
-    const spanElement = await lastPageButton.findElement(By.tagName('span'));
-    let spanValue = await spanElement.getText();
-    for (let i = 0; i < 7; i++) {
+
+    try{
+        socket.emit('companyRocker', 'Search Started')
+        await start();
+        await browser.get('https://www.linkedin.com');
+        // Wait for the page to finish loading before attempting to find the search input element
+        await browser.wait(until.elementLocated(By.className('search-global-typeahead__input')));
+        // get jobs on the page
+        let element = await browser.findElement(By.className('search-global-typeahead__input'));
+        await element.click();
+        await element.sendKeys(q1);
+        await element.sendKeys(Key.RETURN);
+        socket.emit('companyRocker', 'Sending Queries')
+        await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
+        const buttons = await browser.findElements(By.className("search-reusables__primary-filter"));
+        let temp = null
+        socket.emit('companyRocker', 'Applying Filters')
+        for (let i = 0; i < buttons.length; i++) {
+            let ele = await buttons[i].getAttribute('innerHTML')
+            let ind = ele.indexOf('type="button">')
+            let ie = ele.slice(ind+14, ele.length)
+            ie = ie.trim()
+            if(ie.startsWith('Companies')){
+                temp = i
+                break;
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        await buttons[temp].click()
+    
+        // Fetch all companies  
+        socket.emit('companyRocker', 'Fetching Records')
+        await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
+        const filters = await browser.findElements(By.className("search-reusables__primary-filter"));
+        await filters[1].click();
+        socket.emit('companyRocker', 'Compiling Records')
+        const inputField = await browser.findElement(By.className('search-basic-typeahead')).findElement(By.tagName('input'));
+        const buttons2 = await browser.findElement(By.className('reusable-search-filters-buttons')).findElements(By.tagName('button'));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await inputField.click();
+        await inputField.sendKeys(q2, Key.RETURN);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const suggestion = await browser.findElement(By.className('basic-typeahead__triggered-content'));
+        await suggestion.click()
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        buttons2[1].click()
+        socket.emit('companyRocker', 'Finalizing')
+        let totalCompanies = []
+        await browser.wait(until.elementLocated(By.className('entity-result__item')));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const container = await browser.findElement(By.className('theme--mercado'));
         await browser.executeScript("arguments[0].scrollTop = arguments[0].scrollHeight;", container);
         await browser.wait(until.elementLocated(By.className('artdeco-pagination__indicator--number')));
         const pagination = await browser.findElements(By.className('artdeco-pagination__indicator--number'));
-        await browser.wait(until.elementLocated(By.className('reusable-search__entity-result-list')));
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        const list = await browser.findElements(By.className("reusable-search__result-container"));
-        for (let i = 0; i < list.length; i++) {
-            let d = await list[i].getAttribute('innerHTML')
-            socket.emit('companies', d)
+        const lastPageButton = pagination[pagination.length - 1];
+        const spanElement = await lastPageButton.findElement(By.tagName('span'));
+        let spanValue = await spanElement.getText();
+        for (let i = 0; i < 100; i++) {
+            socket.emit('companyRocker', 'Almost there')
+            const container = await browser.findElement(By.className('theme--mercado'));
+            await browser.executeScript("arguments[0].scrollTop = arguments[0].scrollHeight;", container);
+            await browser.wait(until.elementLocated(By.className('artdeco-pagination__indicator--number')));
+            const pagination = await browser.findElements(By.className('artdeco-pagination__indicator--number'));
+            await browser.wait(until.elementLocated(By.className('reusable-search__entity-result-list')));
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            const list = await browser.findElements(By.className("reusable-search__result-container"));
+            for (let i = 0; i < list.length; i++) {
+                let d = await list[i].getAttribute('innerHTML')
+                socket.emit('companies', d)
+            }
+            if (await pagination[i + 1]) {
+                await pagination[i + 1].click()
+                await browser.wait(until.elementLocated(By.className('entity-result__item')));
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
-        if (await pagination[i + 1]) {
-            await pagination[i + 1].click()
-            await browser.wait(until.elementLocated(By.className('entity-result__item')));
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+        return totalCompanies
+    } catch(err){
+        socket.emit('error', 'An error Occured. Please Reqeust Again')
     }
-    return totalCompanies
+
+  
 }
 
 async function getProfiles(socket, queryParams, q2) {
@@ -180,8 +202,24 @@ async function getProfiles(socket, queryParams, q2) {
     await element.sendKeys(Key.RETURN);
     await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
     const buttons = await browser.findElements(By.className("search-reusables__primary-filter"));
-    await buttons[0].click()
-    console.log('first1')
+    
+
+    let temp = null
+    for (let i = 0; i < buttons.length; i++) {
+        let ele = await buttons[i].getAttribute('innerHTML')
+        let ind = ele.indexOf('type="button">')
+        let ie = ele.slice(ind+14, ele.length)
+        ie = ie.trim()
+        console.log(ie)
+        if(ie.startsWith('People')){
+            temp = i
+            break;
+        }
+    }
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    await buttons[temp].click()
+
+
 
     await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -207,24 +245,19 @@ async function getProfiles(socket, queryParams, q2) {
     if (spanValue > 5) {
         spanValue = 5
     }
-    console.log('second2')
     for (let i = 0; i < spanValue; i++) {
         const container = await browser.findElement(By.className('theme--mercado'));
         await browser.executeScript("arguments[0].scrollTop = arguments[0].scrollHeight;", container);
         await browser.wait(until.elementLocated(By.className('artdeco-pagination__indicator--number')));
-        console.log('third3')
         const pagination = await browser.findElements(By.className('artdeco-pagination__indicator--number'));
         // await driver.wait(until.elementLocated(By.className('jobs-search-results__list-item')));
         // await new Promise(resolve => setTimeout(resolve, 6000));
         const list = await browser.findElements(By.className("relative job-card-list"))
-        console.log('before')
         for (let i = 0; i < list.length; i++) {
             let d = await list[i].getAttribute('innerHTML')
             totalProfiles.push(d)
-            console.log('asdfasdf')
             socket.emit('profiles', d)
         }
-        console.log('after')
 
         // totalJobs.push(list.getAttribute('innerHTML'))
         await pagination[i + 1].click()
