@@ -3792,3 +3792,124 @@ var json =  [
 var xls = json2xls(json);
 
 fs.writeFileSync('data.xlsx', xls, 'binary');
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////------------------------------------------------
+
+
+await start();
+
+
+
+const arr = [
+        "https://www.linkedin.com/company/corcentric/",
+        "https://www.linkedin.com/company/moodys-analytics-pulse/",
+        "https://www.linkedin.com/company/grand-canny/",
+        "https://www.linkedin.com/company/scsolutionsinc/",
+        "https://www.linkedin.com/company/avalith-net/",
+        "https://www.linkedin.com/company/neogov/",
+        "https://www.linkedin.com/company/dolly-inc-/",
+        "https://www.linkedin.com/company/universal-translation-services/",
+        "https://www.linkedin.com/company/airspan-networks/",
+        "https://www.linkedin.com/company/bldai/",
+        "https://www.linkedin.com/company/clearsense/",
+        "https://www.linkedin.com/company/ami-global-meetings-solutions-inc./",
+        "https://www.linkedin.com/company/mainline-information-systems/",
+        "https://www.linkedin.com/company/elite-technical/",
+        "https://www.linkedin.com/company/fortnainc/",
+        "https://www.linkedin.com/company/mirabeltechnologies/",
+        "https://www.linkedin.com/company/qtsdatacenters/",
+        "https://www.linkedin.com/company/iquall-networks/",
+        "https://www.linkedin.com/company/ducen/",
+        "https://www.linkedin.com/company/mueller-water-products/",
+        "https://www.linkedin.com/company/medicept/",
+        "https://www.linkedin.com/company/magnolia-river/",
+        "https://www.linkedin.com/company/coding-allstars/",
+        "https://www.linkedin.com/company/bit2bit-s-a-c-/",
+        "https://www.linkedin.com/company/verco-group/",
+        "https://www.linkedin.com/company/social-native/",
+        "https://www.linkedin.com/company/adistec/",
+        "https://www.linkedin.com/company/exusia-inc-/",
+        "https://www.linkedin.com/company/trinity-it-services/",
+        "https://www.linkedin.com/company/engenium-staffing-inc/",
+        "https://www.linkedin.com/company/pma-consultants/",
+        "https://www.linkedin.com/company/distinctive-workforce-solutions/",
+        "https://www.linkedin.com/company/the-revenue-optimization-companies/",
+        "https://www.linkedin.com/company/m-ize/",
+        "https://www.linkedin.com/company/ccna-ccnp-ccie-certifications-exam-dumps/",
+        "https://www.linkedin.com/company/desco-llc/",
+        "https://www.linkedin.com/company/verramobility/",
+        "https://www.linkedin.com/company/signode/",
+        "https://www.linkedin.com/company/legacy-medsearch/",
+        "https://www.linkedin.com/company/teckpert/",
+        "https://www.linkedin.com/company/leniolabs/",
+        "https://www.linkedin.com/company/fortress-information-security/",
+        "https://www.linkedin.com/company/aerosapien-technologies/",
+        "https://www.linkedin.com/company/mojix/",
+        "https://www.linkedin.com/company/intelepeer/",
+        "https://www.linkedin.com/company/paktolus/",
+        "https://www.linkedin.com/company/copypress/",
+        "https://www.linkedin.com/company/aideo-technologies/",
+        "https://www.linkedin.com/company/beesion-technologies-llc-/",
+        "https://www.linkedin.com/company/lifeatappiskey/",
+        "https://www.linkedin.com/company/trimech-solutions/",
+        "https://www.linkedin.com/company/ioassociates-us/",
+        "https://www.linkedin.com/company/knovos/",
+        "https://www.linkedin.com/company/aquiva-labs/",
+        "https://www.linkedin.com/company/geographic-solutions/",
+        "https://www.linkedin.com/company/aisolutionsinc/",
+        "https://www.linkedin.com/company/mobius-institute/",
+        "https://www.linkedin.com/company/heru-inc/",
+        "https://www.linkedin.com/company/future-tech/",
+        "https://www.linkedin.com/company/goja-llc/",
+        "https://www.linkedin.com/company/klika-tech/",
+        "https://www.linkedin.com/company/global-survey/",
+        "https://www.linkedin.com/company/splusm/",
+        "https://www.linkedin.com/company/greenpages-technology-solutions/",
+        "https://www.linkedin.com/company/revinate-inc/",  
+        "https://www.linkedin.com/company/openinternational/",  
+        "https://www.linkedin.com/company/nexval/"
+  ];
+  
+
+
+for (let i = 0; i < arr.length; i++) {
+    let link = arr[i]
+    await browser.get(link);
+    await browser.wait(until.elementLocated(By.className('org-page-navigation__item')));
+    let element = await browser.findElements(By.className('org-page-navigation__item'));
+    await element[1].click();
+    await new Promise(resolve => setTimeout(resolve, 4000));
+    let nameContainer = await browser.findElements(By.className('org-top-card__primary-content'));
+    let nameInnerContainer = await nameContainer[0].findElement(By.className('block'));
+    let name = await nameInnerContainer.findElement(By.tagName('h1'));
+    let nameinner = await name.findElement(By.tagName('span'));
+    let finalName = await nameinner.getAttribute('innerHTML')
+    let websiteContainer = await browser.findElements(By.className('org-grid__content-height-enforcer'));
+    let htmlString = await websiteContainer[0].getAttribute('innerHTML')
+    const dom = new JSDOM(htmlString);
+    const websiteLinks = dom.window.document.querySelectorAll('dt');
+    let websiteLink = null;
+    for (let i = 0; i < websiteLinks.length; i++) {
+        if (websiteLinks[i].textContent.trim() === 'Website') {
+            websiteLink = websiteLinks[i].nextElementSibling.querySelector('a');
+            break;
+        }
+    }
+    const phoneLink = dom.window.document.querySelector('a[href^="tel:"]');
+    const website = websiteLink ? websiteLink.href : null;
+    const phone = phoneLink ? phoneLink.href.substring(0, 15) : null;
+    console.log(finalName, link, website, phone);
+
+}
+

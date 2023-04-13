@@ -8,7 +8,6 @@ import io from 'socket.io-client';
 import socketIOClient from 'socket.io-client';
 
 export default function Home() {
-
   const [job, setJob] = useState('')
   const [user, setUser] = useState('')
   const [jobLocation, setJobLocation] = useState('')
@@ -19,6 +18,11 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState()
   const [companyRocker, setCompanyRocker] = useState('Results')
   const [error, setError] = useState(false)
+  const [companySize, setCompanySize] = useState('');
+
+  const handleChange = (event) => {
+    setCompanySize(event.target.value);
+  };
 
 
   useEffect(() => {
@@ -28,7 +32,6 @@ export default function Home() {
       }, 3000);
     }
   }, [error]);
-
 
   useEffect(() => {
     const socket = socketIOClient('http://localhost:4000');
@@ -56,17 +59,19 @@ export default function Home() {
       }
     })
 
-
     socket.on('profiles', (response) => {
-      console.log('somthing')
+      console.log('somthing 111111111111111111111111')
       if (response) {
         if (response.length > 20) {
-          console.log('hello world')
+          console.log('hello world 00000000000000000000000000')
           setLoader(true)
           const range = document.createRange();
           const fragment = range.createContextualFragment(response);
           console.log(fragment)
           let item = fragment.querySelector('.artdeco-entity-lockup  .artdeco-entity-lockup__title a')
+          if(!item){
+            item = fragment.querySelector('.entity-result__content  .mb1 .app-aware-link ')
+          }
           // let item2 = fragment.querySelector('.relative job-card-list  .mb1 .app-aware-link  span span')
           console.log(item)
           if (item) {
@@ -100,8 +105,6 @@ export default function Home() {
     socket.on('companyRocker', (response) => {
       setCompanyRocker(response)
     })
-
-
 
     socket.on('error', (response) => {
       setError(true)
@@ -148,7 +151,7 @@ export default function Home() {
     setResults([])
     let query2 = company
     setLoader(true)
-    const res = await axios.post(`http://localhost:4000/companies/?name=${query2}/?location=${companyLocation}`);
+    const res = await axios.post(`http://localhost:4000/companies/?name=${query2}/?location=${companyLocation}/?size=${companySize}`);
     const response = res.data
   }
 
@@ -246,6 +249,19 @@ export default function Home() {
                       </div>
                       <div className='w-full flex flex-col'>
                         <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Company Location" required />
+                      </div>
+                      <div className='w-full flex flex-col'>
+                        <select value={companySize} onChange={handleChange} className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96'>
+                          <option value="">Select company size</option>
+                          <option value="0">1-10</option>
+                          <option value="1">11-50</option>
+                          <option value="2">51-200</option>
+                          <option value="3">201-500</option>
+                          <option value="4">501-1000</option>
+                          <option value="5">1001-5000</option>
+                          <option value="6">5001-10000</option>
+                          <option value="7">10000+</option>
+                        </select>
                       </div>
                       <div style={{ height: 'fit-content' }}>
                         <button onClick={() => {
