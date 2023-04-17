@@ -18,7 +18,7 @@ async function start() {
     browser = driver;
 }
 
-async function getJobs(socket, queryParams, q2) {
+async function getJobs(socket, queryParams, q2, q3) {
 
     await start()
     await browser.get('https://www.linkedin.com');
@@ -54,6 +54,15 @@ async function getJobs(socket, queryParams, q2) {
     await innerInput[0].clear();
     await innerInput[0].sendKeys(q2);
     await innerInput[0].sendKeys(Key.RETURN);
+
+
+    await browser.wait(until.elementLocated(By.className('search-reusables__primary-filter')));
+    const buttons2 = await browser.findElements(By.className("search-reusables__primary-filter"));
+    await buttons2[4].click()
+    const buggs = await buttons2[4].findElements(By.className("search-reusables__value-label"));
+    await buggs[q3].click()
+
+    
 
 
 
@@ -289,13 +298,14 @@ const server = http.createServer(async function (req, res) {
     });
     req.on('end', async function () {
         if (req.url.startsWith('/jobs')) {
-            let str = req.url
-            let query = str.slice(12, str.length)
-            let q1 = query.slice(0, query.indexOf('/?location='))
-            let q2 = query.slice(query.indexOf('/?location=') + 11, query.length)
-            const response = await getJobs(socketObj, q1, q2);
-            // res.end(JSON.stringify(response));
-        } else if (req.url.startsWith('/companies')) {
+            let str = req.url;
+            let query = str.slice(12, str.length);
+            let q1 = query.slice(0, query.indexOf('/?location='));
+            let q2 = query.slice(query.indexOf('/?location=') + 11, query.indexOf('/?jobType='));
+            let q3 = query.slice(query.indexOf('/?jobType=') + 10, query.length);
+            const response = await getJobs(socketObj, q1, q2, q3);
+            res.end(JSON.stringify(response));
+          }else if (req.url.startsWith('/companies')) {
             // Parse the URL and query string to retrieve query parameters
             let str = req.url;
             let query = str.slice(17, str.length);

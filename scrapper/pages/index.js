@@ -19,9 +19,14 @@ export default function Home() {
   const [companyRocker, setCompanyRocker] = useState('Results')
   const [error, setError] = useState(false)
   const [companySize, setCompanySize] = useState('');
+  const [jobType, setJobType] = useState('')
 
   const handleChange = (event) => {
     setCompanySize(event.target.value);
+  };
+
+  const handleJobType = (event) => {
+    setJobType(event.target.value);
   };
 
 
@@ -60,10 +65,8 @@ export default function Home() {
     })
 
     socket.on('profiles', (response) => {
-      console.log('somthing 111111111111111111111111')
       if (response) {
         if (response.length > 20) {
-          console.log('hello world 00000000000000000000000000')
           setLoader(true)
           const range = document.createRange();
           const fragment = range.createContextualFragment(response);
@@ -86,6 +89,7 @@ export default function Home() {
     })
 
     socket.on('jobs', (response) => {
+      console.log(response)
       if (response.length > 20) {
         setLoader(true)
         const range = document.createRange();
@@ -120,7 +124,7 @@ export default function Home() {
     }
     let query2 = job
     setLoader(true)
-    const res = await axios.get(`http://localhost:4000/jobs/?name=${query2}/?location=${jobLocation}`);
+    const res = await axios.get(`http://localhost:4000/jobs/?name=${query2}/?location=${jobLocation}/?jobType=${jobType}`);
     const response = res.data
     // if (res.data == '') {
     //   setResults('No Data Found')
@@ -199,6 +203,14 @@ export default function Home() {
                       </div>
                       <div className='w-full flex flex-col'>
                         <input type="text" value={jobLocation} onChange={(e) => setJobLocation(e.target.value)} id="text" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96" placeholder="Job Location" required />
+                      </div>
+                      <div className='w-full flex flex-col'>
+                        <select value={jobType} onChange={handleJobType} className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 w-96'>
+                          <option value="">Select Job Type</option>
+                          <option value="0">Full Time</option>
+                          <option value="1">Part Time</option>
+                          <option value="2">Contract</option>
+                        </select>
                       </div>
                       <div style={{ height: 'fit-content' }}>
                         <button onClick={handleJob} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
@@ -310,7 +322,10 @@ export default function Home() {
                               </div>
                               <div style={{ height: 'fit-content' }}>
                                 <button onClick={() => {
-                                  window.location.href = `${item.link}`
+
+                                 window.open(`${item.link}`, '_blank')
+
+                                  // window.location.href = `${item.link}`
                                 }} className="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">See Details</button>
                               </div>
                             </div>
