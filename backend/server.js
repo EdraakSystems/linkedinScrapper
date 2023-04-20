@@ -60,7 +60,7 @@ async function getJobs(socket, queryParams, q2, q3) {
     const buttons2 = await browser.findElements(By.className("search-reusables__primary-filter"));
     await buttons2[4].click()
     const buggs = await buttons2[4].findElements(By.className("search-reusables__value-label"));
-    await buggs[q3].click()
+    await buggs[0].click()
 
     
 

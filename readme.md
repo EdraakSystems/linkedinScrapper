@@ -1,3 +1,5 @@
+![alt text](./linked.png)
+
 # LinkedIn Scraper using Selenium, Node, and React
 
 This project aims to create a LinkedIn scraper using Selenium, Node, and React. The scraper retrieves data from LinkedIn profiles and returns it in JSON format.
